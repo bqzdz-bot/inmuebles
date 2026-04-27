@@ -2,7 +2,7 @@ import { BrowserRouter, Routes, Route, Outlet } from 'react-router-dom'
 import { DataProvider } from './data/DataContext'
 import Sidebar from './components/Sidebar'
 import Dashboard from './pages/Dashboard'
-import Grupos from './pages/Grupos'
+import Empresas from './pages/Empresas'
 import Propiedades from './pages/Propiedades'
 import PropiedadDetalle from './pages/PropiedadDetalle'
 import Inquilinos from './pages/Inquilinos'
@@ -25,7 +25,7 @@ export default function App() {
         <Routes>
           <Route element={<Layout />}>
             <Route index element={<Dashboard />} />
-            <Route path="grupos" element={<Grupos />} />
+            <Route path="empresas" element={<Empresas />} />
             <Route path="propiedades" element={<Propiedades />} />
             <Route path="propiedades/:id" element={<PropiedadDetalle />} />
             <Route path="inquilinos" element={<Inquilinos />} />
