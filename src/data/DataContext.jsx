@@ -13,16 +13,19 @@ export function DataProvider({ children }) {
   const providers = useStore('proveedores')
   const documents = useStore('documentos')
   const assets = useStore('activos')
+  const valuaciones = useStore('valuaciones')
+  const evaluaciones = useStore('evaluaciones_proveedor')
 
   const loading = groups.loading || properties.loading || tenants.loading
 
   const resetAll = () => {
     groups.reset(); properties.reset(); tenants.reset(); contracts.reset()
-    maintenance.reset(); collections.reset(); providers.reset(); documents.reset(); assets.reset()
+    maintenance.reset(); collections.reset(); providers.reset(); documents.reset()
+    assets.reset(); valuaciones.reset(); evaluaciones.reset()
   }
 
   return (
-    <Ctx.Provider value={{ groups, properties, tenants, contracts, maintenance, collections, providers, documents, assets, resetAll, loading }}>
+    <Ctx.Provider value={{ groups, properties, tenants, contracts, maintenance, collections, providers, documents, assets, valuaciones, evaluaciones, resetAll, loading }}>
       {children}
     </Ctx.Provider>
   )
