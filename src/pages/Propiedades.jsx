@@ -3,12 +3,12 @@ import { Link } from 'react-router-dom'
 import { useData } from '../data/DataContext'
 import { fmt } from '../data/store'
 import { PageHeader, Card, Button, FilterChip, StatusBadge, TipoBadge, Modal, Input, Select, Textarea, Checkbox, ConfirmDialog, Badge } from '../components/UI'
-import { Plus, Search, MapPin, Pencil, Trash2, Eye, Layers, ChevronRight } from 'lucide-react'
+import { Plus, Search, MapPin, Pencil, Trash2, Eye, Layers, ChevronRight, FileText } from 'lucide-react'
 
-const EMPTY={grupo_id:'',parent_id:'',clave:'',nombre:'',direccion:'',colonia:'',ciudad:'Hermosillo',estado:'Sonora',cp:'',tipo:'bodega',uso_suelo:'',renta:'',moneda:'MXN',estatus:'vacante',fecha_adquisicion:'',valor_catastral:'',valor_comercial:'',superficie_terreno:'',superficie_construccion:'',altura_m:'',andenes:'',kva:'',voltaje:'',hvac:false,hvac_desc:'',sprinklers:false,estacionamientos:'',acceso_trailer:false,predial_anual:'',notas:'',lat:'',lng:'',imagenes:[]}
+const EMPTY={grupo_id:'',parent_id:'',clave:'',nombre:'',direccion:'',colonia:'',ciudad:'Hermosillo',estado:'Sonora',pais:'México',cp:'',tipo:'bodega',uso_suelo:'',renta:'',moneda:'MXN',estatus:'vacante',fecha_adquisicion:'',valor_catastral:'',valor_comercial:'',superficie_terreno:'',superficie_construccion:'',altura_m:'',andenes:'',kva:'',voltaje:'',hvac:false,hvac_desc:'',sprinklers:false,estacionamientos:'',acceso_trailer:false,predial_anual:'',notas:'',lat:'',lng:'',imagenes:[]}
 
 export default function Propiedades(){
-  const{properties,groups}=useData()
+  const{properties,groups,documents}=useData()
   const[tipo,setTipo]=useState('all')
   const[grupoF,setGrupoF]=useState('all')
   const[search,setSearch]=useState('')
@@ -18,19 +18,26 @@ export default function Propiedades(){
   const[deleteId,setDeleteId]=useState(null)
   const setF=(k,v)=>setForm(p=>({...p,[k]:v}))
 
-  // Show parent properties + standalone (no parent_id)
-  const parentProps = properties.data.filter(p=>!p.parent_id)
-  const filtered = parentProps.filter(p=>{
+  const parentProps=properties.data.filter(p=>!p.parent_id)
+  const filtered=parentProps.filter(p=>{
     if(tipo!=='all'&&p.tipo!==tipo&&!(tipo==='local_comercial'&&p.tipo==='complejo'))return false
     if(grupoF!=='all'&&p.grupo_id!==grupoF)return false
-    if(search){const s=search.toLowerCase();return p.nombre.toLowerCase().includes(s)||p.clave.toLowerCase().includes(s)||p.ciudad.toLowerCase().includes(s)}
+    if(search){const s=search.toLowerCase();return p.nombre.toLowerCase().includes(s)||p.clave.toLowerCase().includes(s)||(p.ciudad||'').toLowerCase().includes(s)}
     return true
   })
 
   const getSubunits=(pid)=>properties.data.filter(p=>p.parent_id===pid)
   const openNew=()=>{setForm(EMPTY);setEditId(null);setModal('form')}
   const openEdit=(p)=>{setForm({...p});setEditId(p.id);setModal('form')}
-  const handleSave=()=>{if(!form.clave||!form.nombre)return alert('Clave y nombre son requeridos');editId?properties.update(editId,form):properties.add(form);setModal(null)}
+  const handleSave=()=>{
+    if(!form.clave||!form.nombre)return alert('Clave y nombre son requeridos')
+    editId?properties.update(editId,form):properties.add(form)
+    setModal(null)
+  }
+
+  const handleAttachDoc=(propId,file)=>{
+    documents.add({ propiedad_id:propId, tipo_doc:'otro', nombre:file.name, descripcion:`Título de propiedad · ${file.name}`, fecha:new Date().toISOString().slice(0,10) })
+  }
 
   return<div>
     <PageHeader title="Propiedades" subtitle={`${parentProps.length} propiedades · ${properties.data.filter(p=>p.parent_id).length} subunidades`}>
@@ -45,7 +52,7 @@ export default function Propiedades(){
         )}
       </div>
       <select className="text-[11px] border border-slate-200 rounded-lg px-2 py-1.5 bg-white" value={grupoF} onChange={e=>setGrupoF(e.target.value)}>
-        <option value="all">Todos los grupos</option>
+        <option value="all">Todas las empresas</option>
         {groups.data.map(g=><option key={g.id} value={g.id}>{g.nombre}</option>)}
       </select>
     </div></Card>
@@ -58,13 +65,12 @@ export default function Propiedades(){
         const subsRenta=subs.reduce((s,u)=>s+Number(u.renta||0),0)
         const subsRentadas=subs.filter(u=>u.estatus==='rentada').length
         const displayRenta=isComplejo?subsRenta:Number(p.renta)
-
         return<Card key={p.id} className="overflow-hidden" style={{animation:`slideUp 0.3s ease-out ${i*25}ms both`}}>
           <div className="flex items-center gap-3 px-4 py-3 hover:bg-slate-50/50">
             <Link to={`/propiedades/${p.id}`} className="font-mono text-[10px] text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded hover:bg-blue-100">{p.clave}</Link>
             <Link to={`/propiedades/${p.id}`} className="flex-1 min-w-0">
               <p className="font-medium text-slate-700 hover:text-blue-600 truncate">{p.nombre}</p>
-              <p className="text-[10px] text-slate-400 mt-0.5">{p.direccion}, {p.ciudad}</p>
+              <p className="text-[10px] text-slate-400 mt-0.5">{p.direccion}, {p.ciudad}{p.pais&&p.pais!=='México'?`, ${p.pais}`:''}</p>
             </Link>
             {grupo&&<span className="flex items-center gap-1 text-[10px] text-slate-400 shrink-0"><Layers className="w-3 h-3"/>{grupo.nombre.length>18?grupo.nombre.slice(0,18)+'…':grupo.nombre}</span>}
             <TipoBadge tipo={p.tipo}/>
@@ -97,11 +103,11 @@ export default function Propiedades(){
       <div className="space-y-5">
         <div><p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-3">Identificación</p>
           <div className="grid grid-cols-2 gap-3">
-            <Select label="Grupo / Propietario" value={form.grupo_id} onChange={e=>setF('grupo_id',e.target.value)}><option value="">Sin grupo</option>{groups.data.map(g=><option key={g.id} value={g.id}>{g.nombre}</option>)}</Select>
-            <Select label="Propiedad padre (si es subunidad)" value={form.parent_id} onChange={e=>setF('parent_id',e.target.value)}><option value="">Ninguna — es propiedad independiente</option>{properties.data.filter(p=>!p.parent_id&&p.id!==editId).map(p=><option key={p.id} value={p.id}>{p.clave} — {p.nombre}</option>)}</Select>
+            <Select label="Empresa" value={form.grupo_id} onChange={e=>setF('grupo_id',e.target.value)}><option value="">Sin empresa</option>{groups.data.map(g=><option key={g.id} value={g.id}>{g.nombre}</option>)}</Select>
+            <Select label="Propiedad padre (si es subunidad)" value={form.parent_id} onChange={e=>setF('parent_id',e.target.value)}><option value="">Propiedad independiente</option>{properties.data.filter(p=>!p.parent_id&&p.id!==editId).map(p=><option key={p.id} value={p.id}>{p.clave} — {p.nombre}</option>)}</Select>
             <Input label="Clave interna *" placeholder="BOD-HMO-001" value={form.clave} onChange={e=>setF('clave',e.target.value)}/>
             <Input label="Nombre *" value={form.nombre} onChange={e=>setF('nombre',e.target.value)}/>
-            <Select label="Tipo" value={form.tipo} onChange={e=>setF('tipo',e.target.value)}><option value="bodega">Bodega / Industrial</option><option value="local_comercial">Local Comercial</option><option value="complejo">Complejo / Plaza comercial</option><option value="residencial">Residencial</option><option value="terreno">Terreno</option></Select>
+            <Select label="Tipo" value={form.tipo} onChange={e=>setF('tipo',e.target.value)}><option value="bodega">Bodega / Industrial</option><option value="local_comercial">Local Comercial</option><option value="complejo">Complejo / Plaza</option><option value="residencial">Residencial</option><option value="terreno">Terreno</option></Select>
             <Input label="Uso de suelo" value={form.uso_suelo} onChange={e=>setF('uso_suelo',e.target.value)}/>
           </div>
         </div>
@@ -111,6 +117,7 @@ export default function Propiedades(){
             <Input label="Colonia" value={form.colonia} onChange={e=>setF('colonia',e.target.value)}/>
             <Input label="Ciudad" value={form.ciudad} onChange={e=>setF('ciudad',e.target.value)}/>
             <Input label="Estado" value={form.estado} onChange={e=>setF('estado',e.target.value)}/>
+            <Input label="País" value={form.pais} onChange={e=>setF('pais',e.target.value)}/>
             <Input label="C.P." value={form.cp} onChange={e=>setF('cp',e.target.value)}/>
             <Input label="Latitud" type="number" step="any" placeholder="29.0650" value={form.lat} onChange={e=>setF('lat',e.target.value)}/>
             <Input label="Longitud" type="number" step="any" placeholder="-110.5447" value={form.lng} onChange={e=>setF('lng',e.target.value)}/>
@@ -144,6 +151,20 @@ export default function Propiedades(){
           </div>
           {form.hvac&&<Input label="Descripción HVAC" className="mt-3" value={form.hvac_desc} onChange={e=>setF('hvac_desc',e.target.value)}/>}
         </div>
+
+        <div><p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-2">Documentos de la propiedad</p>
+          <p className="text-[11px] text-slate-400 mb-2">Título de propiedad, escritura, permisos de uso de suelo, etc.</p>
+          <label className="flex items-center gap-2 px-4 py-3 border-2 border-dashed border-slate-200 rounded-lg cursor-pointer hover:border-blue-300 hover:bg-blue-50/30 transition-all">
+            <FileText className="w-4 h-4 text-slate-400" />
+            <span className="text-[12px] text-slate-500">Seleccionar archivo para adjuntar</span>
+            <input type="file" className="hidden" onChange={e => {
+              if (e.target.files?.[0] && editId) handleAttachDoc(editId, e.target.files[0])
+              else if (e.target.files?.[0]) alert('Guarda la propiedad primero, después adjunta documentos')
+              e.target.value = ''
+            }} />
+          </label>
+        </div>
+
         <Textarea label="Notas" value={form.notas} onChange={e=>setF('notas',e.target.value)}/>
         <div className="flex gap-2 justify-end pt-2 border-t border-slate-100"><Button variant="secondary" onClick={()=>setModal(null)}>Cancelar</Button><Button variant="primary" onClick={handleSave}>{editId?'Guardar':'Crear'}</Button></div>
       </div>
