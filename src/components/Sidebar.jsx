@@ -1,12 +1,12 @@
 import { NavLink, useLocation } from 'react-router-dom'
 import { clsx } from 'clsx'
-import { LayoutDashboard, Building2, FileText, Users, Wrench, DollarSign, BarChart3, FolderOpen, Settings2, RotateCcw, Layers, UserCircle } from 'lucide-react'
+import { LayoutDashboard, Building2, FileText, Users, Wrench, DollarSign, BarChart3, FolderOpen, Settings2, RotateCcw, Layers, UserCircle, Briefcase } from 'lucide-react'
 import { useData } from '../data/DataContext'
 
 const NAV = [
   { group: 'Portafolio', items: [
     { to: '/', label: 'Dashboard', icon: LayoutDashboard, end: true },
-    { to: '/grupos', label: 'Grupos / Propietarios', icon: Layers },
+    { to: '/empresas', label: 'Empresas', icon: Briefcase },
     { to: '/propiedades', label: 'Propiedades', icon: Building2 },
   ]},
   { group: 'Operación', items: [
@@ -29,7 +29,7 @@ export default function Sidebar() {
   const location = useLocation()
   const isClient = location.pathname.startsWith('/cliente')
 
-  const badges = { '/propiedades': properties.data.length, '/inquilinos': tenants.data.length, '/contratos': contracts.data.length, '/mantenimiento': maintenance.data.filter(m=>m.estatus!=='completada').length, '/grupos': groups.data.length }
+  const badges = { '/propiedades': properties.data.length, '/inquilinos': tenants.data.length, '/contratos': contracts.data.length, '/mantenimiento': maintenance.data.filter(m=>m.estatus!=='completada').length, '/empresas': groups.data.length }
 
   if (isClient) {
     return (
@@ -49,9 +49,6 @@ export default function Sidebar() {
           ))}
           <div className="mt-6"><NavLink to="/" className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-[12px] text-emerald-300/50 hover:bg-white/5 hover:text-emerald-200">← Vista administrador</NavLink></div>
         </nav>
-        <div className="px-5 py-3 border-t border-white/10">
-          <div className="flex items-center gap-2"><div className="w-7 h-7 rounded-full bg-emerald-200/20 text-emerald-300 flex items-center justify-center text-[11px] font-medium">CM</div><div className="flex-1"><p className="text-[11px] text-emerald-200 truncate">Carlos Martínez</p><p className="text-[10px] text-emerald-400/50">Inmuebles del Norte</p></div></div>
-        </div>
       </aside>
     )
   }
@@ -83,7 +80,7 @@ export default function Sidebar() {
           </NavLink>
         </div>
       </nav>
-      <div className="px-4 py-2 border-t border-white/10"><button onClick={()=>{if(confirm('¿Reiniciar todos los datos?'))resetAll()}} className="flex items-center gap-2 px-3 py-1.5 w-full text-[11px] text-slate-500 hover:text-slate-300 rounded-lg hover:bg-white/5"><RotateCcw className="w-3 h-3"/>Reiniciar datos demo</button></div>
+      <div className="px-4 py-2 border-t border-white/10"><button onClick={()=>{if(confirm('¿Reiniciar todos los datos?'))resetAll()}} className="flex items-center gap-2 px-3 py-1.5 w-full text-[11px] text-slate-500 hover:text-slate-300 rounded-lg hover:bg-white/5"><RotateCcw className="w-3 h-3"/>Reiniciar datos</button></div>
       <div className="px-5 py-3 border-t border-white/10"><div className="flex items-center gap-2"><div className="w-7 h-7 rounded-full bg-amber-200/20 text-amber-300 flex items-center justify-center text-[11px] font-medium">RM</div><div className="flex-1"><p className="text-[11px] text-slate-300 truncate">Roberto Méndez</p><p className="text-[10px] text-slate-500">Admin</p></div></div></div>
     </aside>
   )
