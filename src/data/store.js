@@ -1,13 +1,20 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from './supabase'
 
-// ── Hook that syncs with Supabase ──────────────────────────────────────────
+function cleanData(obj) {
+  const cleaned = {}
+  for (const [key, value] of Object.entries(obj)) {
+    if (key === 'id' || key === 'created_at' || key === 'updated_at') continue
+    if (value === '') { cleaned[key] = null }
+    else { cleaned[key] = value }
+  }
+  return cleaned
+}
 
 export function useStore(table) {
   const [data, setData] = useState([])
   const [loading, setLoading] = useState(true)
 
-  // Load data from Supabase on mount
   useEffect(() => {
     let cancelled = false
     async function load() {
@@ -16,9 +23,7 @@ export function useStore(table) {
         .from(table)
         .select('*')
         .order('created_at', { ascending: true })
-      if (!cancelled && !error) {
-        setData(rows || [])
-      }
+      if (!cancelled && !error) setData(rows || [])
       if (error) console.error(`Error loading ${table}:`, error)
       setLoading(false)
     }
@@ -27,11 +32,10 @@ export function useStore(table) {
   }, [table])
 
   const add = useCallback(async (item) => {
-    // Remove id if present (Supabase generates it)
-    const { id, ...rest } = item
+    const clean = cleanData(item)
     const { data: rows, error } = await supabase
       .from(table)
-      .insert([rest])
+      .insert([clean])
       .select()
     if (error) { console.error(`Error adding to ${table}:`, error); return null }
     const newItem = rows[0]
@@ -40,9 +44,10 @@ export function useStore(table) {
   }, [table])
 
   const update = useCallback(async (id, changes) => {
+    const clean = cleanData(changes)
     const { error } = await supabase
       .from(table)
-      .update(changes)
+      .update(clean)
       .eq('id', id)
     if (error) { console.error(`Error updating ${table}:`, error); return }
     setData(prev => prev.map(item => item.id === id ? { ...item, ...changes } : item))
@@ -58,7 +63,6 @@ export function useStore(table) {
   }, [table])
 
   const reset = useCallback(() => {
-    // For Supabase version, reset just reloads from DB
     async function reload() {
       const { data: rows } = await supabase.from(table).select('*').order('created_at', { ascending: true })
       setData(rows || [])
@@ -68,8 +72,6 @@ export function useStore(table) {
 
   return { data, loading, add, update, remove, reset, setData }
 }
-
-// ── Utilities (unchanged) ──────────────────────────────────────────────────
 
 export function fmt(n) { return '$' + Math.round(Number(n) || 0).toLocaleString('es-MX') }
 export function fmtDate(d) {
