@@ -125,7 +125,7 @@ export default function Propiedades(){
         </div>
         <div><p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-3">Operación</p>
           <div className="grid grid-cols-3 gap-3">
-            <Input label="Renta mensual" type="number" value={form.renta} onChange={e=>setF('renta',e.target.value)}/>
+            <Input label="Renta mensual esperada" type="number" value={form.renta} onChange={e=>setF('renta',e.target.value)}/>
             <Select label="Moneda" value={form.moneda} onChange={e=>setF('moneda',e.target.value)}><option value="MXN">MXN</option><option value="USD">USD</option></Select>
             <Select label="Estatus" value={form.estatus} onChange={e=>setF('estatus',e.target.value)}><option value="vacante">Vacante</option><option value="rentada">Rentada</option><option value="en_remodelacion">En remodelación</option><option value="en_venta">En venta</option><option value="propia">Propia</option></Select>
             <Input label="Valor catastral" type="number" value={form.valor_catastral} onChange={e=>setF('valor_catastral',e.target.value)}/>
