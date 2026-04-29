@@ -41,9 +41,7 @@ export default function Dashboard() {
       months.push({ mes: label.charAt(0).toUpperCase() + label.slice(1), ingresos: total })
     }
     // If no real data, show expected rent for current month
-    if (months.every(m => m.ingresos === 0) && rentaEfectiva > 0) {
-      months[months.length - 1].ingresos = rentaEfectiva
-    }
+
     return months
   }
   const chartData = buildChartData()
