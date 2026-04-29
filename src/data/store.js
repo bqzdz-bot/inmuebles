@@ -79,8 +79,3 @@ export function fmtDate(d) {
   const dt = new Date(d + 'T12:00:00')
   return dt.toLocaleDateString('es-MX', { day: 'numeric', month: 'short', year: 'numeric' })
 }
-export const INCOME_CHART = [
-  { mes: 'Sep', ingresos: 148400 }, { mes: 'Oct', ingresos: 155200 },
-  { mes: 'Nov', ingresos: 161800 }, { mes: 'Dic', ingresos: 158100 },
-  { mes: 'Ene', ingresos: 172400 }, { mes: 'Feb', ingresos: 186600 },
-]
