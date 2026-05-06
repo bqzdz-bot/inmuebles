@@ -5,7 +5,10 @@ import { fmt } from '../data/store'
 import { PageHeader, Card, Button, FilterChip, StatusBadge, TipoBadge, Modal, Input, Select, Textarea, Checkbox, ConfirmDialog, Badge } from '../components/UI'
 import { Plus, Search, MapPin, Pencil, Trash2, Eye, Layers, ChevronRight, FileText } from 'lucide-react'
 
-const EMPTY={grupo_id:'',parent_id:'',clave:'',nombre:'',direccion:'',colonia:'',ciudad:'Hermosillo',estado:'Sonora',pais:'México',cp:'',tipo:'bodega',uso_suelo:'',renta:'',moneda:'MXN',estatus:'vacante',fecha_adquisicion:'',valor_catastral:'',valor_comercial:'',superficie_terreno:'',superficie_construccion:'',altura_m:'',andenes:'',kva:'',voltaje:'',hvac:false,hvac_desc:'',sprinklers:false,estacionamientos:'',acceso_trailer:false,predial_anual:'',notas:'',lat:'',lng:'',imagenes:[]}
+const EMPTY={grupo_id:'',parent_id:'',clave:'',nombre:'',direccion:'',colonia:'',ciudad:'Hermosillo',estado:'Sonora',pais:'México',cp:'',tipo:'bodega',uso_suelo:'',renta:'',moneda:'MXN',estatus:'vacante',fecha_adquisicion:'',valor_catastral:'',valor_comercial:'',superficie_terreno:'',superficie_construccion:'',altura_m:'',andenes:'',kva:'',voltaje:'',hvac:false,hvac_desc:'',sprinklers:false,estacionamientos:'',acceso_trailer:false,predial_anual:'',notas:'',lat:'',lng:'',imagenes:[],cos:'',cus:'',serv_agua:'no_disponible',serv_drenaje:'no_disponible',serv_electricidad:'no_disponible',serv_voz_datos:'no_disponible'}
+
+const SERV_OPTIONS=[['existente','Existente'],['factibilidad','Factibilidad'],['no_disponible','No disponible']]
+const SERV_COLORS={existente:'text-emerald-600',factibilidad:'text-amber-600',no_disponible:'text-slate-400'}
 
 export default function Propiedades(){
   const{properties,groups,documents}=useData()
@@ -28,7 +31,7 @@ export default function Propiedades(){
 
   const getSubunits=(pid)=>properties.data.filter(p=>p.parent_id===pid)
   const openNew=()=>{setForm(EMPTY);setEditId(null);setModal('form')}
-  const openEdit=(p)=>{setForm({...p});setEditId(p.id);setModal('form')}
+  const openEdit=(p)=>{setForm({...EMPTY,...p});setEditId(p.id);setModal('form')}
   const handleSave=()=>{
     if(!form.clave||!form.nombre)return alert('Clave y nombre son requeridos')
     editId?properties.update(editId,form):properties.add(form)
@@ -36,7 +39,7 @@ export default function Propiedades(){
   }
 
   const handleAttachDoc=(propId,file)=>{
-    documents.add({ propiedad_id:propId, tipo_doc:'otro', nombre:file.name, descripcion:`Título de propiedad · ${file.name}`, fecha:new Date().toISOString().slice(0,10) })
+    documents.add({ propiedad_id:propId, tipo_doc:'otro', nombre:file.name, descripcion:`Documento · ${file.name}`, fecha:new Date().toISOString().slice(0,10) })
   }
 
   return<div>
@@ -101,6 +104,7 @@ export default function Propiedades(){
 
     <Modal open={modal==='form'} onClose={()=>setModal(null)} title={editId?'Editar propiedad':'Nueva propiedad'} width="max-w-3xl">
       <div className="space-y-5">
+        {/* IDENTIFICACIÓN */}
         <div><p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-3">Identificación</p>
           <div className="grid grid-cols-2 gap-3">
             <Select label="Empresa" value={form.grupo_id} onChange={e=>setF('grupo_id',e.target.value)}><option value="">Sin empresa</option>{groups.data.map(g=><option key={g.id} value={g.id}>{g.nombre}</option>)}</Select>
@@ -111,6 +115,8 @@ export default function Propiedades(){
             <Input label="Uso de suelo" value={form.uso_suelo} onChange={e=>setF('uso_suelo',e.target.value)}/>
           </div>
         </div>
+
+        {/* DIRECCIÓN */}
         <div><p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-3">Dirección y ubicación</p>
           <div className="grid grid-cols-3 gap-3">
             <Input label="Calle y número" className="col-span-2" value={form.direccion} onChange={e=>setF('direccion',e.target.value)}/>
@@ -123,6 +129,8 @@ export default function Propiedades(){
             <Input label="Longitud" type="number" step="any" placeholder="-110.5447" value={form.lng} onChange={e=>setF('lng',e.target.value)}/>
           </div>
         </div>
+
+        {/* OPERACIÓN */}
         <div><p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-3">Operación</p>
           <div className="grid grid-cols-3 gap-3">
             <Input label="Renta mensual esperada" type="number" value={form.renta} onChange={e=>setF('renta',e.target.value)}/>
@@ -134,11 +142,15 @@ export default function Propiedades(){
             <Input label="Predial anual" type="number" value={form.predial_anual} onChange={e=>setF('predial_anual',e.target.value)}/>
           </div>
         </div>
+
+        {/* SUPERFICIES Y CONSTRUCCIÓN */}
         <div><p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-3">Superficies y construcción</p>
           <div className="grid grid-cols-3 gap-3">
             <Input label="Superficie terreno (m²)" type="number" value={form.superficie_terreno} onChange={e=>setF('superficie_terreno',e.target.value)}/>
             <Input label="Superficie construcción (m²)" type="number" value={form.superficie_construccion} onChange={e=>setF('superficie_construccion',e.target.value)}/>
             <Input label="Altura libre (m)" type="number" step="0.1" value={form.altura_m} onChange={e=>setF('altura_m',e.target.value)}/>
+            <Input label="COS (Coef. Ocupación)" type="number" step="0.01" placeholder="0.70" value={form.cos} onChange={e=>setF('cos',e.target.value)}/>
+            <Input label="CUS (Coef. Utilización)" type="number" step="0.01" placeholder="2.10" value={form.cus} onChange={e=>setF('cus',e.target.value)}/>
             <Input label="Andenes" type="number" value={form.andenes} onChange={e=>setF('andenes',e.target.value)}/>
             <Input label="KVA" type="number" value={form.kva} onChange={e=>setF('kva',e.target.value)}/>
             <Input label="Voltaje" value={form.voltaje} onChange={e=>setF('voltaje',e.target.value)}/>
@@ -152,8 +164,27 @@ export default function Propiedades(){
           {form.hvac&&<Input label="Descripción HVAC" className="mt-3" value={form.hvac_desc} onChange={e=>setF('hvac_desc',e.target.value)}/>}
         </div>
 
+        {/* SERVICIOS */}
+        <div><p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-3">Servicios e infraestructura</p>
+          <p className="text-[11px] text-slate-400 mb-3">Indica si el servicio ya existe, si hay carta de factibilidad, o si no está disponible.</p>
+          <div className="grid grid-cols-2 gap-3">
+            <Select label="Agua" value={form.serv_agua} onChange={e=>setF('serv_agua',e.target.value)}>
+              {SERV_OPTIONS.map(([v,l])=><option key={v} value={v}>{l}</option>)}
+            </Select>
+            <Select label="Drenaje" value={form.serv_drenaje} onChange={e=>setF('serv_drenaje',e.target.value)}>
+              {SERV_OPTIONS.map(([v,l])=><option key={v} value={v}>{l}</option>)}
+            </Select>
+            <Select label="Electricidad" value={form.serv_electricidad} onChange={e=>setF('serv_electricidad',e.target.value)}>
+              {SERV_OPTIONS.map(([v,l])=><option key={v} value={v}>{l}</option>)}
+            </Select>
+            <Select label="Voz y datos" value={form.serv_voz_datos} onChange={e=>setF('serv_voz_datos',e.target.value)}>
+              {SERV_OPTIONS.map(([v,l])=><option key={v} value={v}>{l}</option>)}
+            </Select>
+          </div>
+        </div>
+
+        {/* DOCUMENTOS */}
         <div><p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-2">Documentos de la propiedad</p>
-          <p className="text-[11px] text-slate-400 mb-2">Título de propiedad, escritura, permisos de uso de suelo, etc.</p>
           <label className="flex items-center gap-2 px-4 py-3 border-2 border-dashed border-slate-200 rounded-lg cursor-pointer hover:border-blue-300 hover:bg-blue-50/30 transition-all">
             <FileText className="w-4 h-4 text-slate-400" />
             <span className="text-[12px] text-slate-500">Seleccionar archivo para adjuntar</span>
